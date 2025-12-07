@@ -31,16 +31,11 @@ import { logo } from "./icons";
 export function AppSidebar({ title }: { title: string }) {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set(["Layers"]));
   const location = useLocation();
-
-  // ZUSTAND MAGIC: Auto-updates when layers appear in the backend
   const layerCount = useMetricsStore((s) => Object.keys(s.layers).length);
-
-  // Generate the layer links dynamically
   const layerLinks = Array.from({ length: layerCount }, (_, i) => ({
     title: `Layer ${i}`,
     url: `/layers/${i}`,
   }));
-
   const menuItems = [
     { title: "Overview", url: "/", icon: Orbit },
     {
@@ -52,8 +47,6 @@ export function AppSidebar({ title }: { title: string }) {
     { title: "Compute", url: "/compute", icon: Gpu },
     { title: "Config", url: "/config", icon: LucideSettings2 },
   ];
-
-  // Helper to toggle collapsible
   const toggleItem = (title: string) => {
     setOpenItems((prev) => {
       const newSet = new Set(prev);
@@ -62,7 +55,6 @@ export function AppSidebar({ title }: { title: string }) {
       return newSet;
     });
   };
-
   return (
     <Sidebar variant="floating">
       <SidebarHeader className="text-left ml-2 mt-1 text-2xl">

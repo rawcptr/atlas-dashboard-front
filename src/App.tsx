@@ -1,5 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+// import "./App.css";
+import Config from "./components/config";
 import Overview from "./components/overview";
 import { AppSidebar } from "./components/sidebar";
 import { SocketManager } from "./socketManager";
@@ -13,9 +15,12 @@ function Main({
 }) {
   return (
     <SidebarProvider>
-      <AppSidebar title={title} />
-      {/* <SidebarTrigger /> */}
-      <main className="flex-1">{children}</main>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar title={title} />
+        <main className="flex-1 p-6 md:p-8 lg:p-10">
+          <div className="mx-auto max-w-7xl">{children}</div>
+        </main>
+      </div>
     </SidebarProvider>
   );
 }
@@ -28,7 +33,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Overview />} />
           {/* <Route path="/layers/:id" element={<Layers />} /> */}
-          {/* <Route path="/config" element={<Config />}></Route> */}
+          <Route path="/config" element={<Config />}></Route>
         </Routes>
       </Main>
     </BrowserRouter>
