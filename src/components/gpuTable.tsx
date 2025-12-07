@@ -1,5 +1,9 @@
-import { useMetricsStore } from "@/store";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Table,
@@ -9,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useMetricsStore } from "@/store";
 
 export interface GPU {
   gpu: number;
@@ -130,4 +135,3 @@ export function GpuCard() {
     </Card>
   );
 }
-
