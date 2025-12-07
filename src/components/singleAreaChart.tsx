@@ -14,11 +14,9 @@ import { useMotionValueEvent, useSpring } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-export const ChartColor3 = "#ded8c4";
-
 export const ChartColors = {
   loss: "#b05730",
-  mean: "#dbd3f0",
+  mean: "#ded8c4",
   dev: "#9c87f5",
   max: "#cb997e",
   grad_norm: "#b4552d",
@@ -170,35 +168,32 @@ export function GenericChart({
                 )} 0 0)`}
               />
             )}
-            {chartData.length !== 0 && (
-              <>
-                <line
-                  x1={axis}
-                  y1={0}
-                  x2={axis}
-                  y2={"85%"}
-                  stroke={`var(--color-${metric})`}
-                  strokeDasharray="3 3"
-                  strokeLinecap="round"
-                  strokeOpacity={activeLabel === null ? 0 : 0.3}
-                />
-                <rect
-                  x={axis - 50}
-                  y={0}
-                  width={50}
-                  height={18}
-                  fill={`var(--color-${metric})`}
-                />
-                <text
-                  x={axis - 25}
-                  y={13}
-                  textAnchor="middle"
-                  fill="var(--primary-foreground)"
-                >
-                  {Number(springY.get()).toFixed(precision)}
-                </text>
-              </>
-            )}
+
+            <line
+              x1={axis}
+              y1={0}
+              x2={axis}
+              y2={"85%"}
+              stroke={`var(--color-${metric})`}
+              strokeDasharray="3 3"
+              strokeLinecap="round"
+              strokeOpacity={activeLabel === null ? 0 : 0.3}
+            />
+            <rect
+              x={axis - 50}
+              y={0}
+              width={50}
+              height={18}
+              fill={`var(--color-${metric})`}
+            />
+            <text
+              x={axis - 25}
+              y={13}
+              textAnchor="middle"
+              fill="var(--primary-foreground)"
+            >
+              {Number(springY.get()).toFixed(precision)}
+            </text>
 
             <Area
               dataKey="value"

@@ -1,11 +1,10 @@
 import { GpuCard } from "./gpuTable";
 
 import { computeComparatorStatistics } from "@/lib/utils";
-// import { LossChart } from "../charts/global";
 import type { ChartConfig } from "@/components/ui/chart";
 import { useMetricsStore } from "@/store";
-import { ChartColors, GenericChart } from "./genericChart";
 import { MetricCard, type MetricCardProp } from "./metrics";
+import { ChartColors, GenericChart } from "./singleAreaChart";
 
 function tokensPerSecond(tokens: number | undefined | null) {
   if (!tokens) {
@@ -87,8 +86,8 @@ function MetricRow() {
 }
 
 const lossConfig = {
-  value: {
-    label: "value",
+  loss: {
+    label: "loss",
     color: ChartColors.loss,
   },
 } satisfies ChartConfig;

@@ -5,6 +5,7 @@ import Config from "./components/config";
 import Overview from "./components/overview";
 import { AppSidebar } from "./components/sidebar";
 import { SocketManager } from "./socketManager";
+import Layers from "./components/layers";
 
 function Main({
   title,
@@ -32,7 +33,7 @@ function App() {
       <Main title="Atlas">
         <Routes>
           <Route path="/" element={<Overview />} />
-          {/* <Route path="/layers/:id" element={<Layers />} /> */}
+          <Route path="/layers/:id" element={<Layers />} />
           <Route path="/config" element={<Config />}></Route>
         </Routes>
       </Main>
