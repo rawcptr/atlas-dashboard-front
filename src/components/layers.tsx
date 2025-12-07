@@ -26,22 +26,20 @@ export default function Layers() {
           className="flex-1"
         />
       </div>
-      <div >
-        <LayerChart
-          layerId={Number(id)}
-          metric="attn_entropy"
-          title="mean attention entropy"
-          style="w-full h-52"
-          area={false}
-        />
-        <LayerChart
-          layerId={Number(id)}
-          metric="grad_norm"
-          title="gradient L2 normalization"
-          style="w-full h-52"
-          area={false}
-        />
-      </div>
+      <LayerChart
+        layerId={Number(id)}
+        metric="attn_entropy"
+        title="mean attention entropy"
+        style="w-full h-52"
+        area={false}
+      />
+      <LayerChart
+        layerId={Number(id)}
+        metric="grad_norm"
+        title="gradient L2 normalization"
+        style="w-full h-52"
+        area={false}
+      />
     </div>
   );
 }
