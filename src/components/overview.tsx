@@ -1,8 +1,10 @@
 import { GpuCard } from "./gpuTable";
 
 import { computeComparatorStatistics } from "@/lib/utils";
-import { useMetricsStore } from "@/store";
 // import { LossChart } from "../charts/global";
+import type { ChartConfig } from "@/components/ui/chart";
+import { useMetricsStore } from "@/store";
+import { ChartColors, GenericChart } from "./genericChart";
 import { MetricCard, type MetricCardProp } from "./metrics";
 
 function tokensPerSecond(tokens: number | undefined | null) {
@@ -83,11 +85,34 @@ function MetricRow() {
     </div>
   );
 }
+
+const lossConfig = {
+  value: {
+    label: "value",
+    color: ChartColors.loss,
+  },
+} satisfies ChartConfig;
+
+export function LossChart() {
+  const data = useMetricsStore((s) => s.global.loss);
+  if (!data) return <></>;
+  return (
+    <GenericChart
+      title="training progress"
+      metric="loss"
+      xlabel="step"
+      chartData={data}
+      chartConfig={lossConfig}
+      chartStyle="w-full h-64"
+    />
+  );
+}
+
 export default function Overview() {
   return (
     <div className="flex flex-col gap-2.5">
       <MetricRow />
-      {/* <LossChart /> */}
+      <LossChart />
       <GpuCard />
     </div>
   );
