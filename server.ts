@@ -197,10 +197,6 @@ const server = Bun.serve({
     open(ws) {
       if (ws.data.type === "dashboard") {
         dashboardClients.add(ws);
-        // Send all recent messages to the new client as a batched message
-        console.log(
-          `Sending batched history with ${messageHistory.length} messages to new client`
-        );
         ws.send(JSON.stringify({ type: "history", messages: messageHistory }));
       }
     },
