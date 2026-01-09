@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   ChevronRight,
+  Gauge,
   Gpu,
   Layers,
   LucideSettings2,
@@ -44,6 +45,7 @@ export function AppSidebar({ title }: { title: string }) {
       icon: Layers,
       children: layerLinks.length > 0 ? layerLinks : undefined,
     },
+    { title: "Optimizer", url: "/optimizer", icon: Gauge },
     { title: "Compute", url: "/compute", icon: Gpu },
     { title: "Config", url: "/config", icon: LucideSettings2 },
   ];

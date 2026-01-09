@@ -1,7 +1,7 @@
 import { GpuCard } from "./gpuTable";
 
-import { computeComparatorStatistics } from "@/lib/utils";
 import type { ChartConfig } from "@/components/ui/chart";
+import { computeComparatorStatistics } from "@/lib/utils";
 import { useMetricsStore } from "@/store";
 import { MetricCard, type MetricCardProp } from "./metrics";
 import { ChartColors, GenericChart } from "./singleAreaChart";

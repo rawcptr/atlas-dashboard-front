@@ -2,10 +2,10 @@ import { useMetricsSocket } from "@/hooks/useMetricsSocket";
 
 export function SocketManager({
   domain = "localhost",
-  port = 3000,
+  port = 2626,
 }: {
   domain: string;
-  port: number;
+  port?: number;
 }) {
   useMetricsSocket(`ws://${domain}:${port}/metrics`);
   return null;

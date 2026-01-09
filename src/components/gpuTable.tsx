@@ -33,7 +33,7 @@ function getColorClass(percentage: number): string {
 }
 
 function ProgressWithLabel({ current, max }: { current: number; max: number }) {
-  const percentage = (current / max) * 100;
+  const percentage = max > 0 ? (current / max) * 100 : 0;
   return (
     <div className="flex gap-2 items-center min-w-[140px]">
       <Progress
@@ -108,13 +108,20 @@ export function GpuCard() {
   const staticInfo = useMetricsStore((s) => s.staticInfo || {});
   const gpuArray: GPU[] = Object.entries(gpuRecord).map(([id, data]) => ({
     gpu: Number(id),
-    temp: data.temp ?? 0,
+    temp: data.temp.length > 0 ? data.temp[data.temp.length - 1].value : 0,
     perf: data.perf ?? "N/A",
-    powerDraw: data.pwr_draw ?? 0,
+    powerDraw:
+      data.pwr_draw.length > 0
+        ? data.pwr_draw[data.pwr_draw.length - 1].value
+        : 0,
     maxPower: data.max_pwr ?? 0,
-    memoryUsage: data.mem_usg ?? 0,
+    memoryUsage:
+      data.mem_usg.length > 0 ? data.mem_usg[data.mem_usg.length - 1].value : 0,
     maxMemory: data.max_mem ?? 0,
-    gpuUtil: data.gpu_util ?? 0,
+    gpuUtil:
+      data.gpu_util.length > 0
+        ? data.gpu_util[data.gpu_util.length - 1].value
+        : 0,
   }));
   // if (gpuArray.length === 0) return null;
   const gpus = Object.values(gpuArray).sort(

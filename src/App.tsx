@@ -1,11 +1,12 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 // import "./App.css";
+import Compute from "./components/compute";
 import Config from "./components/config";
+import Layers from "./components/layers";
 import Overview from "./components/overview";
 import { AppSidebar } from "./components/sidebar";
 import { SocketManager } from "./socketManager";
-import Layers from "./components/layers";
 
 function Main({
   title,
@@ -29,11 +30,12 @@ function Main({
 function App() {
   return (
     <BrowserRouter>
-      <SocketManager domain={window.location.hostname} port={3000} />
+      <SocketManager domain={window.location.hostname} />
       <Main title="Atlas">
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/layers/:id" element={<Layers />} />
+          <Route path="/compute" element={<Compute />} />
           <Route path="/config" element={<Config />}></Route>
         </Routes>
       </Main>

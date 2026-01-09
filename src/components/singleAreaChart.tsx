@@ -32,6 +32,8 @@ export interface GenericChartProps {
   chartStyle?: string | null | undefined;
   area?: boolean | null | undefined;
   precision?: number;
+  xFormatter?: (n: number) => string;
+  yFormatter?: (n: number) => string;
 }
 
 export function GenericChart({
@@ -43,6 +45,8 @@ export function GenericChart({
   chartStyle,
   area = true,
   precision = 3,
+  xFormatter = (n: number) => String(n),
+  yFormatter = (n: number) => n.toFixed(3),
 }: GenericChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const [axis, setAxis] = useState(0);
@@ -83,8 +87,8 @@ export function GenericChart({
     <Card>
       <CardHeader className="text-left">
         <CardTitle className="font-normal">
-          {Number(springY.get()).toFixed(precision)} {"\u{2022}"} {xlabel}:{" "}
-          {activeLabel ?? "-"}
+          {yFormatter(Number(springY.get()))} {"\u{2022}"} {xlabel}:{" "}
+          {xFormatter(Number(activeLabel)) ?? "-"}
         </CardTitle>
         <CardDescription>{title}</CardDescription>
       </CardHeader>
@@ -144,15 +148,14 @@ export function GenericChart({
               axisLine={false}
               tick={true}
               tickMargin={12}
+              tickFormatter={(tick: number) => xFormatter(tick)}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={6}
-              domain={[min - padding * 0.5, max + padding]}
-              tickFormatter={(tick: number) =>
-                String(tick.toFixed(precision) || tick)
-              }
+              domain={[min, max + padding]}
+              tickFormatter={(tick: number) => tick.toFixed(precision)}
             />
             {area && (
               <Area
@@ -162,7 +165,6 @@ export function GenericChart({
                 fillOpacity={0.9}
                 stroke={`var(--color-${metric})`}
                 clipPath={`inset(0 ${Math.max(
-                  // eslint-disable-next-line react-hooks/refs
                   (chartRef.current?.getBoundingClientRect().width ?? 0) - axis,
                   0
                 )} 0 0)`}
@@ -192,7 +194,7 @@ export function GenericChart({
               textAnchor="middle"
               fill="var(--primary-foreground)"
             >
-              {Number(springY.get()).toFixed(precision)}
+              {yFormatter(springY.get())}
             </text>
 
             <Area
