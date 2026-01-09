@@ -12,6 +12,11 @@ A real-time dashboard for monitoring machine learning training metrics.
 
 Stores records in a SQLite database using Bun. Uses WebSockets from Bun for real-time data ingestion and dashboard updates.
 
+## Screenshots
+
+![Overview](assets/overview.png)
+![Layers](assets/layers.png)
+
 ## Setup
 
 Install dependencies:
