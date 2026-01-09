@@ -15,7 +15,7 @@ import { useMetricsStore } from "@/store";
 import { Separator } from "@radix-ui/react-select";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Label } from "./ui/label";
+// import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 
 function ResetMetrics() {
@@ -66,7 +66,7 @@ function SaveReplay() {
   const handleDownload = async () => {
     const response = await fetch("/download-replay");
     const blob = await response.blob();
-    if (blob.size === 636) {
+    if (blob.size === 636 || blob.size === 0) {
       toast("Failed to save data!", {
         description: "The dashboard does not contain any data.",
       });
@@ -85,7 +85,7 @@ function SaveReplay() {
   };
 
   return (
-    <div className="flex justify-between">
+    <div className="flex items-center justify-between align-middle">
       <span>Save current training metrics</span>
       <Button onClick={handleDownload} className="font-normal">
         Save Replay
@@ -97,15 +97,15 @@ function SaveReplay() {
 function ReducedMotion() {
   const { reducedMotion, setReducedMotion } = useMetricsStore();
   return (
-    <div className="flex justify-between">
-      <div className="flex items-center space-x-2">
-        <Label htmlFor="reduced-motion">Reduced Motion</Label>
-        <Switch
-          checked={reducedMotion}
-          onCheckedChange={setReducedMotion}
-          id="reduced-motion"
-        />
-      </div>
+    <div className="flex items-center justify-between align-middle">
+      <span>Reduced Motion</span>
+      {/* <Label htmlFor="reduced-motion">Reduced Motion</Label> */}
+      <Switch
+        className="scale-150 origin-right"
+        checked={reducedMotion}
+        onCheckedChange={setReducedMotion}
+        id="reduced-motion"
+      />
     </div>
   );
 }
@@ -117,7 +117,9 @@ function LoadReplay() {
 
   const handleFile = async (file: File) => {
     if (!file.name.endsWith(".jsonl")) {
-      alert("Please upload a .jsonl file");
+      toast("Invalid file type", {
+        description: "Please upload a .jsonl file.",
+      });
       return;
     }
 
@@ -132,10 +134,14 @@ function LoadReplay() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`Loaded ${data.loaded} messages`);
+        toast("Replay loaded", {
+          description: `Loaded ${data.loaded} messages.`,
+        });
       }
     } catch (error) {
-      alert("Failed to load replay file");
+      toast("Load failed", {
+        description: "Failed to load replay file.",
+      });
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -149,64 +155,68 @@ function LoadReplay() {
     if (file) handleFile(file);
   };
 
-  return (
-    <div className="flex justify-between">
-      <span>Load previous training run</span>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="secondary" className="font-normal">
-            Load Replay
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-medium">Load Replay File</DialogTitle>
-            <DialogDescription>
-              Drag and drop a .jsonl file or click to browse
-            </DialogDescription>
-          </DialogHeader>
+  const dialogbox = (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="secondary" className="font-normal">
+          Load Replay
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-medium">Load Replay File</DialogTitle>
+          <DialogDescription>
+            Drag and drop a .jsonl file or click to browse
+          </DialogDescription>
+        </DialogHeader>
 
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
+            isDragging
+              ? "border-blue-500 bg-blue-50"
+              : "border-gray-300 hover:border-gray-400"
+          }`}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <p className="text-sm text-gray-600">
+            {isLoading
+              ? "Loading..."
+              : "Drop replay file here or click to browse"}
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".jsonl"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFile(file);
             }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
-              isDragging
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300 hover:border-gray-400"
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <p className="text-sm text-gray-600">
-              {isLoading
-                ? "Loading..."
-                : "Drop replay file here or click to browse"}
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".jsonl"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFile(file);
-              }}
-              disabled={isLoading}
-            />
-          </div>
+            disabled={isLoading}
+          />
+        </div>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Close
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <div className="flex items-center justify-between">
+      <span>Load previous training run</span>
+      {dialogbox}
     </div>
   );
 }
@@ -216,9 +226,11 @@ export default function Config() {
     <div className="flex flex-col gap-6">
       <span className="text-left text-[24px]">Configuration</span>
       <Separator className="bg-border h-0.5" />
-      <ReducedMotion />
-      <SaveReplay />
-      <LoadReplay />
+      <div className="grid grid-rows-3 gap-6 auto-rows-fr">
+        <SaveReplay />
+        <LoadReplay />
+        <ReducedMotion />
+      </div>
       <Separator className="bg-border h-0.5" />
       <ResetMetrics />
     </div>

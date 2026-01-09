@@ -11,7 +11,8 @@ import {
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import type { DataPoint } from "@/lib/utils";
 import { useMotionValueEvent, useSpring } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useMetricsStore } from "@/store";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 export const ChartColors = {
@@ -36,7 +37,7 @@ export interface GenericChartProps {
   yFormatter?: (n: number) => string;
 }
 
-export function GenericChart({
+const GenericChartComponent = ({
   title,
   metric,
   xlabel,
@@ -47,14 +48,17 @@ export function GenericChart({
   precision = 3,
   xFormatter = (n: number) => String(n),
   yFormatter = (n: number) => n.toFixed(3),
-}: GenericChartProps) {
+}: GenericChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const [axis, setAxis] = useState(0);
 
-  const values = chartData.map((d) => d.value as number);
-  const min = values.length > 0 ? Math.min(...values) : 0;
-  const max = values.length > 0 ? Math.max(...values) : 0;
-  const padding = Number(((max - min) * 0.2).toFixed(precision));
+  const { min, max, padding } = useMemo(() => {
+    const vals = chartData.map((d) => d.value as number);
+    const mn = vals.length > 0 ? Math.min(...vals) : 0;
+    const mx = vals.length > 0 ? Math.max(...vals) : 0;
+    const pad = Number(((mx - mn) * 0.2).toFixed(precision));
+    return { min: mn, max: mx, padding: pad };
+  }, [chartData, precision]);
 
   const springX = useSpring(0, {
     stiffness: 190,
@@ -67,17 +71,27 @@ export function GenericChart({
   });
 
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
+  const reducedMotion = useMetricsStore(s => s.reducedMotion);
+  const prevLengthRef = useRef(chartData.length);
 
   useEffect(() => {
+    const isBatch = Math.abs(chartData.length - prevLengthRef.current) > 10;
+    prevLengthRef.current = chartData.length;
     if (chartData.length > 0) {
       const lastDataPoint = chartData[chartData.length - 1] ?? 0;
       const width = chartRef.current?.getBoundingClientRect().width || 0;
-      springX.jump(width);
-      springY.jump(lastDataPoint.value as number);
+      const shouldJump = reducedMotion || isBatch;
+      if (shouldJump) {
+        springX.jump(width);
+        springY.jump(lastDataPoint.value as number);
+      } else {
+        springX.set(width);
+        springY.set(lastDataPoint.value as number);
+      }
       setActiveLabel(String(lastDataPoint.step));
       setAxis(width);
     }
-  }, [chartData, springX, springY]);
+  }, [chartData, springX, springY, reducedMotion]);
 
   useMotionValueEvent(springX, "change", (latest) => {
     setAxis(latest);
@@ -117,10 +131,17 @@ export function GenericChart({
             onMouseLeave={() => {
               const width =
                 chartRef.current?.getBoundingClientRect().width || 0;
-              springX.set(width);
-              springY.jump(
-                chartData.length > 0 ? chartData[chartData.length - 1].value : 0
-              );
+              if (reducedMotion) {
+                springX.jump(width);
+                springY.jump(
+                  chartData.length > 0 ? chartData[chartData.length - 1].value : 0
+                );
+              } else {
+                springX.set(width);
+                springY.set(
+                  chartData.length > 0 ? chartData[chartData.length - 1].value : 0
+                );
+              }
               setActiveLabel(
                 String(
                   chartData.length > 0
@@ -242,4 +263,6 @@ export function GenericChart({
       </CardFooter>
     </Card>
   );
-}
+};
+
+export const GenericChart = React.memo(GenericChartComponent);

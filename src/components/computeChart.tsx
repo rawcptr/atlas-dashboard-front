@@ -1,5 +1,7 @@
+import React from "react";
 import { useMetricsStore } from "@/store";
 import type { GpuStats } from "@/types/schema";
+import { useThrottle } from "@/hooks/useThrottle";
 import { ChartColors, GenericChart } from "./singleAreaChart";
 import type { ChartConfig } from "./ui/chart";
 
@@ -17,7 +19,7 @@ interface ComputeMetricChartProps {
   precision?: number;
 }
 
-export function ComputeChart({
+function ComputeChartComponent({
   gpuId,
   metric,
   title,
@@ -31,7 +33,8 @@ export function ComputeChart({
   precision = 3,
 }: ComputeMetricChartProps) {
   const data = useMetricsStore((s) => s.gpu[gpuId]?.[metric] ?? {});
-  if (!data) return null;
+  const throttledData = useThrottle(data, 1000);
+  if (!throttledData || throttledData.length === 0) return null;
   const config = {
     [metric]: { label: metric, color: color },
   } satisfies ChartConfig;
@@ -41,7 +44,7 @@ export function ComputeChart({
         title={title}
         metric={metric}
         xlabel={xlabel}
-        chartData={data}
+        chartData={throttledData}
         chartConfig={config}
         area={area}
         chartStyle={style}
@@ -52,3 +55,5 @@ export function ComputeChart({
     </div>
   );
 }
+
+export const ComputeChart = React.memo(ComputeChartComponent);

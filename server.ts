@@ -1,19 +1,51 @@
 import { type ServerWebSocket } from "bun";
+import { Database } from "bun:sqlite";
+import { z } from "zod";
 import { WSMessage } from "./src/types/schema";
 
+type WSMessageType = z.infer<typeof WSMessage>;
+
 // ------------------------------------------------------------
-// STATE & HISTORY (Same as before)
+// DATABASE & STATE
 // ------------------------------------------------------------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const messageHistory: any[] = [];
+const db = new Database("bun:sqlite:messages.db");
+db.run(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    json TEXT NOT NULL,
+    timestamp REAL NOT NULL
+  );
+`);
+const RECENT_LIMIT = 10000;
+
+// ------------------------------------------------------------
+// STATE & HISTORY
+// ------------------------------------------------------------
+const messageHistory: WSMessageType[] = [];
+
+// Load recent messages from DB on startup
+function loadRecentMessages() {
+  const query = db.query(
+    "SELECT json FROM messages ORDER BY timestamp DESC LIMIT ?"
+  );
+  const rows = query.all(RECENT_LIMIT) as { json: string }[];
+  messageHistory.length = 0;
+  for (const row of rows.reverse()) {
+    const msg = JSON.parse(row.json) as WSMessageType;
+    messageHistory.push(msg);
+  }
+}
+loadRecentMessages();
 const dashboardClients = new Set<ServerWebSocket<{ type: string }>>();
 
 async function saveHistory() {
-  // Download replay file
+  // Download replay file from DB
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `replay-${timestamp}.jsonl`;
 
-  const content = messageHistory.map((msg) => JSON.stringify(msg)).join("\n");
+  const query = db.query("SELECT json FROM messages ORDER BY timestamp ASC");
+  const rows = query.all() as { json: string }[];
+  const content = rows.map((row) => row.json).join("\n");
 
   return new Response(content, {
     headers: {
@@ -28,27 +60,42 @@ async function loadHistory(req: Request) {
   const file = formData.get("file") as File;
   const text = await file.text();
 
-  messageHistory.length = 0; // Clear history
+  // Clear DB and memory
+  db.run("DELETE FROM messages");
+  messageHistory.length = 0;
+
+  let count = 0;
   text.split("\n").forEach((line) => {
     if (line.trim()) {
       try {
         const msg = JSON.parse(line);
         const result = WSMessage.safeParse(msg);
-        if (result.success) messageHistory.push(result.data);
+        if (result.success) {
+          // Insert into DB
+          const insert = db.query(
+            "INSERT INTO messages (json, timestamp) VALUES (?, ?)"
+          );
+          insert.run(line, Date.now() / 1000); // Use current time or parse from msg?
+          messageHistory.push(result.data);
+          if (messageHistory.length > RECENT_LIMIT) {
+            messageHistory.shift();
+          }
+          count++;
+        }
       } catch (e) {
         console.error("Invalid message in replay file:", e);
       }
     }
   });
 
-  // Notify all dashboards
-  const payload = JSON.stringify({
-    type: "replay_loaded",
-    count: messageHistory.length,
-  });
-  for (const client of dashboardClients) client.send(payload);
+  // Broadcast loaded messages to existing clients
+  for (const client of dashboardClients) {
+    for (let i = messageHistory.length - count; i < messageHistory.length; i++) {
+      client.send(JSON.stringify(messageHistory[i]));
+    }
+  }
 
-  return new Response(JSON.stringify({ loaded: messageHistory.length }));
+  return new Response(JSON.stringify({ loaded: count }));
 }
 
 function handleProducerMessage(message: string | Buffer<ArrayBuffer>) {
@@ -58,9 +105,19 @@ function handleProducerMessage(message: string | Buffer<ArrayBuffer>) {
     if (result.success) {
       if (result.data.type === "reset") {
         messageHistory.length = 0;
+        db.run("DELETE FROM messages");
         console.log("message history cleared by producer");
       } else {
         messageHistory.push(result.data);
+        // Keep only recent in memory
+        if (messageHistory.length > RECENT_LIMIT) {
+          messageHistory.shift();
+        }
+        // Save to DB
+        const insert = db.query(
+          "INSERT INTO messages (json, timestamp) VALUES (?, ?)"
+        );
+        insert.run(JSON.stringify(result.data), Date.now() / 1000); /// <reference path="e" />
       }
       const payload = JSON.stringify(result.data);
       for (const client of dashboardClients) client.send(payload);
@@ -103,6 +160,7 @@ const server = Bun.serve({
     }
     if (url.pathname === "/reset" && req.method === "POST") {
       messageHistory.length = 0;
+      db.run("DELETE FROM messages");
       const payload = JSON.stringify({ type: "reset" });
       for (const client of dashboardClients) client.send(payload);
       return new Response(JSON.stringify({ status: "reset" }));

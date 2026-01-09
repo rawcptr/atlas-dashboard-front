@@ -9,7 +9,7 @@
         "lint": "eslint .",
         "preview": "vite preview",
         "serve": "bun run build && bun run server.ts",
-        "serve dev": "bun run dev && bun run server.ts"
+        "serve dev": "bun run dev & bun run server.ts"
     },
     "dependencies": {
         "@radix-ui/react-collapsible": "^1.1.12",

@@ -1,8 +1,10 @@
+import React from "react";
 import { GpuCard } from "./gpuTable";
 
 import type { ChartConfig } from "@/components/ui/chart";
 import { computeComparatorStatistics } from "@/lib/utils";
 import { useMetricsStore } from "@/store";
+import { useThrottle } from "@/hooks/useThrottle";
 import { MetricCard, type MetricCardProp } from "./metrics";
 import { ChartColors, GenericChart } from "./singleAreaChart";
 
@@ -92,20 +94,21 @@ const lossConfig = {
   },
 } satisfies ChartConfig;
 
-export function LossChart() {
+export const LossChart = React.memo(function LossChart() {
   const data = useMetricsStore((s) => s.global.loss);
-  if (!data) return <></>;
+  const throttledData = useThrottle(data, 1000);
+  if (!throttledData || throttledData.length === 0) return <></>;
   return (
     <GenericChart
       title="training progress"
       metric="loss"
       xlabel="step"
-      chartData={data}
+      chartData={throttledData}
       chartConfig={lossConfig}
       chartStyle="w-full h-64"
     />
   );
-}
+});
 
 export default function Overview() {
   return (

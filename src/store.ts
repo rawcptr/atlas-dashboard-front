@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { z } from "zod";
 import {
   type DataPointArray,
   GpuData,
@@ -13,6 +14,8 @@ import {
   WSMessage,
 } from "./types/schema";
 
+type WSMessageType = z.infer<typeof WSMessage>;
+
 interface MetricsState {
   connected: boolean;
   layers: Record<number, LayerStats>;
@@ -21,11 +24,14 @@ interface MetricsState {
   gpu: Record<number, GpuStats>;
   staticInfo: StaticMetrics;
   reducedMotion: boolean;
+  queue: WSMessageType[];
 
   setConnected: (status: boolean) => void;
-  processMessage: (msg: unknown) => void;
+  enqueueMessage: (msg: WSMessageType) => void;
+  flushUpdates: () => void;
   setReducedMotion: (reduced: boolean) => void;
   reset: () => void;
+  processMessage: (rawMsg: unknown) => void;
 }
 type MetricsForType<T> = {
   [K in keyof T]?: T[K] extends DataPointArray
@@ -71,7 +77,7 @@ export const useMetricsStore = create<MetricsState>()(
         gpu: {},
         staticInfo: {},
       }),
-    processMessage: (rawMsg) => {
+    processMessage: (rawMsg: unknown) => {
       const result = WSMessage.safeParse(rawMsg);
       if (!result.success) {
         console.error("Invalid WS Message:", result.error);

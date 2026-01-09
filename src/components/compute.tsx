@@ -27,9 +27,9 @@ export default function Compute() {
     .sort((a, b) => a - b);
   const [selectedGpu, setSelectedGpu] = useState(gpuIds[0] ?? 0);
 
-  // if (gpuIds.length === 0) {
-  //   return <div>No GPU data available</div>;
-  // }
+  if (gpuIds.length === 0) {
+    return <div>No GPU data available</div>;
+  }
 
   return (
     <div className="flex flex-col gap-2.5">
