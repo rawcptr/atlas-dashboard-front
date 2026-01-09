@@ -25,3 +25,5 @@ dist-ssr
 
 public/fonts/AeonikFonoVF-Roman.ttf
 digest.txt
+bun:sqlite:messages.db
+test-replay.jsonl

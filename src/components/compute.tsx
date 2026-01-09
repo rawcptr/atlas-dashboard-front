@@ -8,6 +8,7 @@ import {
 import { useMetricsStore } from "@/store";
 import { useState } from "react";
 import { ComputeChart } from "./computeChart";
+import { Separator } from "./ui/separator";
 
 function formatTimestamp(ts: number) {
   if (!ts) return "-";
@@ -48,6 +49,7 @@ export default function Compute() {
           ))}
         </SelectContent>
       </Select>
+      <Separator className="bg-border h-0.5 mt-1.5 mb-1.5" />
       <div className="flex flex-col gap-2.5 flex-1">
         <ComputeChart
           gpuId={selectedGpu}

@@ -34,7 +34,7 @@ function App() {
       <Main title="Atlas">
         <Routes>
           <Route path="/" element={<Overview />} />
-          <Route path="/layers/:id" element={<Layers />} />
+          <Route path="/layers" element={<Layers />} />
           <Route path="/compute" element={<Compute />} />
           <Route path="/optimizer" element={<></>} />
           <Route path="/config" element={<Config />}></Route>
