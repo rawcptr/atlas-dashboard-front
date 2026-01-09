@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import type { DataPoint } from "@/lib/utils";
-import { useMotionValueEvent, useSpring } from "motion/react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useMetricsStore } from "@/store";
+import { useMotionValueEvent, useSpring } from "motion/react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 export const ChartColors = {
@@ -37,7 +37,7 @@ export interface GenericChartProps {
   yFormatter?: (n: number) => string;
 }
 
-const GenericChartComponent = ({
+export const GenericChart = ({
   title,
   metric,
   xlabel,
@@ -71,22 +71,31 @@ const GenericChartComponent = ({
   });
 
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
-  const reducedMotion = useMetricsStore(s => s.reducedMotion);
+  const reducedMotion = useMetricsStore((s) => s.reducedMotion);
   const prevLengthRef = useRef(chartData.length);
+  const lastUpdateTimeRef = useRef(Date.now());
 
   useEffect(() => {
+    const now = Date.now();
+    const timeDiff = now - lastUpdateTimeRef.current;
+    const isRapid = timeDiff < 200; // Detect rapid updates within 200ms
+    lastUpdateTimeRef.current = now;
+
     const isBatch = Math.abs(chartData.length - prevLengthRef.current) > 10;
     prevLengthRef.current = chartData.length;
+
+    const anim = reducedMotion || isRapid || isBatch;
+    console.log(`anim: ${anim}`);
+
     if (chartData.length > 0) {
       const lastDataPoint = chartData[chartData.length - 1] ?? 0;
       const width = chartRef.current?.getBoundingClientRect().width || 0;
-      const shouldJump = reducedMotion || isBatch;
-      if (shouldJump) {
-        springX.jump(width);
-        springY.jump(lastDataPoint.value as number);
-      } else {
+      if (anim) {
         springX.set(width);
         springY.set(lastDataPoint.value as number);
+      } else {
+        springX.jump(width);
+        springY.jump(lastDataPoint.value as number);
       }
       setActiveLabel(String(lastDataPoint.step));
       setAxis(width);
@@ -134,12 +143,16 @@ const GenericChartComponent = ({
               if (reducedMotion) {
                 springX.jump(width);
                 springY.jump(
-                  chartData.length > 0 ? chartData[chartData.length - 1].value : 0
+                  chartData.length > 0
+                    ? chartData[chartData.length - 1].value
+                    : 0
                 );
               } else {
                 springX.set(width);
                 springY.set(
-                  chartData.length > 0 ? chartData[chartData.length - 1].value : 0
+                  chartData.length > 0
+                    ? chartData[chartData.length - 1].value
+                    : 0
                 );
               }
               setActiveLabel(
@@ -189,6 +202,7 @@ const GenericChartComponent = ({
                   (chartRef.current?.getBoundingClientRect().width ?? 0) - axis,
                   0
                 )} 0 0)`}
+                isAnimationActive={!reducedMotion}
               />
             )}
 
@@ -225,6 +239,7 @@ const GenericChartComponent = ({
               stroke={`var(--color-${metric})`}
               strokeOpacity={area ? 0.2 : 1.0}
               strokeWidth={!area ? 1.75 : undefined}
+              isAnimationActive={!reducedMotion}
             />
             <defs>
               <linearGradient
@@ -264,5 +279,3 @@ const GenericChartComponent = ({
     </Card>
   );
 };
-
-export const GenericChart = React.memo(GenericChartComponent);

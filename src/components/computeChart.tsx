@@ -1,7 +1,7 @@
-import React from "react";
+import { useThrottle } from "@/hooks/useThrottle";
 import { useMetricsStore } from "@/store";
 import type { GpuStats } from "@/types/schema";
-import { useThrottle } from "@/hooks/useThrottle";
+import React from "react";
 import { ChartColors, GenericChart } from "./singleAreaChart";
 import type { ChartConfig } from "./ui/chart";
 

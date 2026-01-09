@@ -90,7 +90,11 @@ async function loadHistory(req: Request) {
 
   // Broadcast loaded messages to existing clients
   for (const client of dashboardClients) {
-    for (let i = messageHistory.length - count; i < messageHistory.length; i++) {
+    for (
+      let i = messageHistory.length - count;
+      i < messageHistory.length;
+      i++
+    ) {
       client.send(JSON.stringify(messageHistory[i]));
     }
   }
@@ -193,7 +197,11 @@ const server = Bun.serve({
     open(ws) {
       if (ws.data.type === "dashboard") {
         dashboardClients.add(ws);
-        for (const msg of messageHistory) ws.send(JSON.stringify(msg));
+        // Send all recent messages to the new client as a batched message
+        console.log(
+          `Sending batched history with ${messageHistory.length} messages to new client`
+        );
+        ws.send(JSON.stringify({ type: "history", messages: messageHistory }));
       }
     },
     message(ws, message) {

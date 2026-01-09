@@ -1,6 +1,6 @@
+import { z } from "zod";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { z } from "zod";
 import {
   type DataPointArray,
   GpuData,
@@ -25,8 +25,10 @@ interface MetricsState {
   staticInfo: StaticMetrics;
   reducedMotion: boolean;
   queue: WSMessageType[];
+  isInitialLoad: boolean;
 
   setConnected: (status: boolean) => void;
+  setIsInitialLoad: (isInitialLoad: boolean) => void;
   enqueueMessage: (msg: WSMessageType) => void;
   flushUpdates: () => void;
   setReducedMotion: (reduced: boolean) => void;
@@ -68,7 +70,9 @@ export const useMetricsStore = create<MetricsState>()(
     gpu: {},
     staticInfo: {},
     reducedMotion: false,
+    isInitialLoad: true,
     setConnected: (status) => set({ connected: status }),
+    setIsInitialLoad: (isInitialLoad: boolean) => set({ isInitialLoad }),
     setReducedMotion: (reduced: boolean) => set({ reducedMotion: reduced }),
     reset: () =>
       set({
