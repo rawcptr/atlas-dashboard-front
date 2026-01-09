@@ -2,9 +2,9 @@ import React from "react";
 import { GpuCard } from "./gpuTable";
 
 import type { ChartConfig } from "@/components/ui/chart";
+import { useThrottle } from "@/hooks/useThrottle";
 import { computeComparatorStatistics } from "@/lib/utils";
 import { useMetricsStore } from "@/store";
-import { useThrottle } from "@/hooks/useThrottle";
 import { MetricCard, type MetricCardProp } from "./metrics";
 import { ChartColors, GenericChart } from "./singleAreaChart";
 

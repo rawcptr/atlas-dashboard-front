@@ -8,13 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  Gauge,
-  Gpu,
-  Layers,
-  LucideSettings2,
-  Orbit,
-} from "lucide-react";
+import { Gauge, Gpu, Layers, LucideSettings2, Orbit } from "lucide-react";
 
 import { Link, useLocation } from "react-router-dom";
 import { logo } from "./icons";
@@ -38,22 +32,22 @@ export function AppSidebar({ title }: { title: string }) {
         <Separator className="bg-border h-0.5" />
       </SidebarHeader>
       <SidebarGroupContent>
-      <SidebarMenu className="px-2">
-        {menuItems.map((item) => (
-          <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton
-              className="p-4.5 font-normal"
-              asChild
-              isActive={location.pathname === item.url}
-            >
-              <Link to={item.url}>
-                <item.icon />
-                <span>{item.title}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
+        <SidebarMenu className="px-2">
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                className="p-4.5 font-normal"
+                asChild
+                isActive={location.pathname === item.url}
+              >
+                <Link to={item.url}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </SidebarGroupContent>
     </Sidebar>
   );
